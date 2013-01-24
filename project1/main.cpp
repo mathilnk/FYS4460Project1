@@ -1,10 +1,12 @@
 #include <iostream>
+#include<cmath>
+#include"lattice.h"
 
 using namespace std;
 
 int main()
 {
-    cout << "Hello World!" << endl;
+    Lattice l(3,3,3);
     return 0;
 }
 
