@@ -27,7 +27,7 @@ void Lattice::makeLattice(){
             for(k=0;k<Nz;k++){
                 for(p=0;p<4;p++){
                     arma_lattice.row(counter++) = unit_cell_table.row(p) + mat("i j k 0 0 0");
-                    cout<<arma_lattice.row(p)<<endl;
+
 
                 }
             }
@@ -38,9 +38,9 @@ void Lattice::makeLattice(){
 
 }
 void Lattice::get_vmd(string comment){
-    cout<<"N\n"<< comment <<endl;
+    cout<<4*N<<endl;cout<< comment <<endl;
     int i;
-    for(i=0;i<N;i++){
+    for(i=0;i<4*N;i++){
         cout<<(arma_lattice.row(i))<<endl;
     }
 }

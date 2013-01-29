@@ -1,14 +1,17 @@
 #ifndef ATOM_H
 #define ATOM_H
-
+#include<armadillo>
+#include<iostream>
+using namespace arma;
+using namespace std;
 class Atom
 {
 public:
-    Atom(double *position, double *velocity, char* element);
-    double* position;
-    double* velocity;
-    char* element;
-
+    Atom();
+    Atom(vec position, vec velocity, string element);
+    vec  position;
+    vec velocity;
+    string element;
 };
 
 #endif // ATOM_H

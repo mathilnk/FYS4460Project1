@@ -1,6 +1,9 @@
 #include "atom.h"
 
-Atom::Atom(double* position, double* velocity, char* element)
+Atom::Atom(){
+}
+
+Atom::Atom(vec position, vec velocity, string element)
 {
     this->position = position;
     this->velocity = velocity;
