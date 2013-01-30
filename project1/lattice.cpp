@@ -4,15 +4,21 @@
 
 
 
-Lattice::Lattice(int Nx, int Ny, int Nz, string element, double b)
+Lattice::Lattice(int Nx, int Ny, int Nz, string element, double b, double T)
 {
     this->Nx = Nx;
     this->Ny = Ny;
     this->Nz = Nz;
     this->N = Nx*Ny*Nz;
-    this->numberOfAtoms = N*4;
+    this->numberOfAtoms = N*4 + 10;
     this->element = element;
     this->b = b;
+    this->T = T;
+    this->k =1.38e-23; //J/K
+    this->s = sqrt(2*pi*T);
+    this->m = 0;
+    this->pi = 3.1415;
+
     makeLattice();
 }
 
@@ -26,20 +32,71 @@ void Lattice::makeLattice(){
             }
         }
     }
+    //makeEndAtoms();
 }
 
 
+void Lattice::makeEndAtoms(){
+//top square
+    vec pos, vec;
+    Atom *atom1,*atom2,*atom3,*atom4,*atom5,*atom6,*atom7;
+    vec<<0<<0<<0;
+    pos<<(Nx-1)*b<<(Ny-1)*b<<Nz*b;
+    atom1= new Atom(pos,vec, element);
+    allAtoms.push_back(atom1);
+
+    pos[0] +=b;
+    atom2= new Atom(pos,vec, element);
+
+    allAtoms.push_back(atom2);
+
+    pos[1]+=b;
+    atom3= new Atom(pos,vec,element);
+
+    allAtoms.push_back(atom3);
+
+
+    pos[0]-=b;
+    atom4= new Atom(pos,vec, element);
+
+    allAtoms.push_back(atom4);
+
+    //bottom square
+
+    pos<<Nx*b<<(Ny-1)*b<<(Nz-1)*b;
+    atom5= new Atom(pos,vec, element);
+
+    allAtoms.push_back(atom5);
+
+    pos[1] +=b;
+    atom6= new Atom(pos,vec, element);
+
+    allAtoms.push_back(atom6);
+
+    pos[0]-=b;
+    atom7= new Atom(pos,vec, element);
+
+    allAtoms.push_back(atom7);
+
+
+
+
+
+
+
+}
 
 void Lattice::writeVMDfile(const char *Filename, string comment){
     ofstream writeToFile;
+    numberOfAtoms = allAtoms.size();
     writeToFile.open(Filename);
     writeToFile<<numberOfAtoms<<endl;
     writeToFile<<comment<<endl;
     for(int i=0;i<numberOfAtoms;i++){
         Atom* a = allAtoms[i];
-        writeToFile<<element;
+        writeToFile<<element<<" ";
         for(int j=0;j<6;j++){
-            writeToFile<<a->position[j];
+            writeToFile<<a->position[j]<<" ";
         }
         writeToFile<<"\n";
     }
@@ -47,7 +104,40 @@ void Lattice::writeVMDfile(const char *Filename, string comment){
 
 }
 
+void Lattice::findPosAndMakeAtoms2(vec posBase){
+    ////////////////////
+    //modifiser denne//
+    //////////////////
+    vec posxy(3);
+    vec posyz(3);
+    vec poszx(3);
+    vec velxy(3);
+    vec velyz(3);
+    vec velzx(3);
+    vec velbase(3);
 
+    posxy<<0.5*b<<0.5*b<<0;
+    posyz<<0<<0.5*b<<0.5*b;
+    poszx<<0.5*b<<0<<0.5*b;
+    posxy+=posBase;
+    posyz+=posBase;
+    poszx+=posBase;
+    velxy<<gauss(s, m)<<gauss(s, m)<<gauss(s, m);
+    velyz<<gauss(s, m)<<gauss(s, m)<<gauss(s, m);
+    velzx<<gauss(s, m)<<gauss(s, m)<<gauss(s, m);
+    velbase<<gauss(s, m)<<gauss(s, m)<<gauss(s, m);
+    vec velo(3);
+    velo<<0<<0<<0;
+    Atom *xy = new Atom(posxy,velxy, element);
+    Atom *yz = new Atom(posyz,velyz, element);
+    Atom *zx = new Atom(poszx,velzx, element);
+    Atom *base = new Atom(posBase,velbase, element);
+    allAtoms.push_back(xy);
+    allAtoms.push_back(yz);
+    allAtoms.push_back(zx);
+    allAtoms.push_back(base);
+
+}
 void Lattice::findPosAndMakeAtoms(vec posBase){
     vec posxy(3);
     vec posyz(3);
@@ -69,3 +159,13 @@ void Lattice::findPosAndMakeAtoms(vec posBase){
     allAtoms.push_back(zx);
     allAtoms.push_back(base);
 }
+
+double Lattice::gauss(double s, double m){
+    default_random_engine generator;
+    normal_distribution<double> distribution(m,s);
+    double num = distribution(generator);
+    return num;
+}
+
+
+

@@ -11,7 +11,7 @@ using namespace arma;
 
 int main()
 {
-    Lattice l(1,1,1,"Ar", 2);
+    Lattice l(2,2,3,"Ar", 2);
     l.writeVMDfile("unitcell.xyz", "Argon");
 
     return 0;
