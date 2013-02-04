@@ -3,21 +3,26 @@
 
 
 
-
-Lattice::Lattice(int Nx, int Ny, int Nz, string element, double b, double T)
+Lattice::Lattice(){}
+Lattice::Lattice(int Nx, int Ny, int Nz, string element, double b, double T, double mass)
 {
     this->Nx = Nx;
     this->Ny = Ny;
     this->Nz = Nz;
     this->N = Nx*Ny*Nz;
-    this->numberOfAtoms = N*4 + 10;
+    this->numberOfAtoms = N*4;
     this->element = element;
     this->b = b;
     this->T = T;
     this->k =1.38e-23; //J/K
-    this->s = sqrt(2*pi*T);
-    this->m = 0;
+    this->mass = mass;
+    this->s = sqrt(k*T/mass);
+    //this->s = 144.0;
+    cout<<s<<endl;
+    this->mean = 0;
     this->pi = 3.1415;
+    this->seed = 123456789;
+
 
     makeLattice();
 }
@@ -28,7 +33,7 @@ void Lattice::makeLattice(){
         for(int j=0;j<Ny;j++){
             for(int k=0;k<Nz; k++){
                 posBase<<i*b<<j*b<<k*b;
-                findPosAndMakeAtoms(posBase);
+                findPosAndMakeAtoms2(posBase);
             }
         }
     }
@@ -95,8 +100,11 @@ void Lattice::writeVMDfile(const char *Filename, string comment){
     for(int i=0;i<numberOfAtoms;i++){
         Atom* a = allAtoms[i];
         writeToFile<<element<<" ";
-        for(int j=0;j<6;j++){
+        for(int j=0;j<3;j++){
             writeToFile<<a->position[j]<<" ";
+        }
+        for(int k=0;k<3;k++){
+            writeToFile<<a->velocity[k]<<" ";
         }
         writeToFile<<"\n";
     }
@@ -122,10 +130,10 @@ void Lattice::findPosAndMakeAtoms2(vec posBase){
     posxy+=posBase;
     posyz+=posBase;
     poszx+=posBase;
-    velxy<<gauss(s, m)<<gauss(s, m)<<gauss(s, m);
-    velyz<<gauss(s, m)<<gauss(s, m)<<gauss(s, m);
-    velzx<<gauss(s, m)<<gauss(s, m)<<gauss(s, m);
-    velbase<<gauss(s, m)<<gauss(s, m)<<gauss(s, m);
+    velxy<<gauss(s, mean)<<gauss(s, mean)<<gauss(s, mean);
+    velyz<<gauss(s, mean)<<gauss(s, mean)<<gauss(s, mean);
+    velzx<<gauss(s, mean)<<gauss(s, mean)<<gauss(s, mean);
+    velbase<<gauss(s, mean)<<gauss(s, mean)<<gauss(s, mean);
     vec velo(3);
     velo<<0<<0<<0;
     Atom *xy = new Atom(posxy,velxy, element);
@@ -160,11 +168,9 @@ void Lattice::findPosAndMakeAtoms(vec posBase){
     allAtoms.push_back(base);
 }
 
-double Lattice::gauss(double s, double m){
-    default_random_engine generator;
-    normal_distribution<double> distribution(m,s);
-    double num = distribution(generator);
-    return num;
+double Lattice::gauss(double s, double mean){
+
+    return r8_normal(mean,s,seed);
 }
 
 

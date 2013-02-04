@@ -6,10 +6,14 @@ CONFIG -= qt
 SOURCES += main.cpp \
     lattice.cpp \
     atom.cpp \
-    facecube.cpp
+    facecube.cpp \
+    normal.cpp \
+    verlet_solver.cpp
 
 HEADERS += \
     lattice.h \
     atom.h \
-    facecube.h
+    facecube.h\
+    normal.hpp \
+    verlet_solver.h
 
