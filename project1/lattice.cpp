@@ -91,10 +91,11 @@ void Lattice::makeEndAtoms(){
 
 }
 
-void Lattice::writeVMDfile(const char *Filename, string comment){
+void Lattice::writeVMDfile(string filename, string comment){
     ofstream writeToFile;
     numberOfAtoms = allAtoms.size();
-    writeToFile.open(Filename);
+    const char* filename_ch = filename.c_str();
+    writeToFile.open(filename_ch);
     writeToFile<<numberOfAtoms<<endl;
     writeToFile<<comment<<endl;
     for(int i=0;i<numberOfAtoms;i++){

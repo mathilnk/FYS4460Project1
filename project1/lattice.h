@@ -16,7 +16,7 @@ public:
     Lattice();
     Lattice(int Nx, int Ny, int Nz, string element, double b, double T, double mass);
     vector<Atom*> allAtoms;
-    void writeVMDfile(const char* Filename, string comment);
+    void writeVMDfile(string Filename, string comment);
     void findPosAndMakeAtoms(vec posBase);
     void findPosAndMakeAtoms2(vec posBase);
     void makeEndAtoms();

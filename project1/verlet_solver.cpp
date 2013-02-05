@@ -6,31 +6,45 @@ Verlet_solver::Verlet_solver(Lattice &molecule){
     current_time_step = 0;
 }
 
-void Verlet_solver::solve(double t_start,int timesteps, double dt, char* filename){
+void Verlet_solver::solve(double t_start,int timesteps, double dt, string filename){
     /*
-      Filename should be a large char *, with room for num.xyz
+      Filename should be without ending. If you want the files to be called test*.xyz, just write filename = test.
       This method solves for many timesteps, and for each timestep a xyz file is made.
       */
-    char new_filename[100];
+
     double time = t_start;
     for(int i=0;i<timesteps;i++){
         time = t_start + dt*i;
-        strcpy(new_filename, filename);
-        this->molecule = solve_one_time_step(time, dt, new_filename);
+        this->molecule = solve_one_time_step(time, dt, filename);
     }
 
 }
 
 
 
-Lattice Verlet_solver::solve_one_time_step(double t, double dt, char* filename){
-    char buffer[100];
-    char time_step_char[64];
-    char end_xyz[46] = ".xyz";
-    sprintf(time_step_char, "%d", current_time_step);
-    strcat(filename, time_step_char);
-    strcat(filename, end_xyz);
-    molecule.writeVMDfile(filename,"comment");
+Lattice Verlet_solver::solve_one_time_step(double t, double dt, string filename){
+    /*
+      Solves for one time step, and returns the Lattice at the next timestep.
+      dt is the time_step_size,
+      t is the time
+      filename is the base for the filename the lattice is saved to (VMD style).
+      if you want the filename to be test*.xyz, write string filename = test.
+      */
+
+    /////////////////////////////////////////////////////////////
+    //gives the filename an ending, with the current_time_step//
+    ///////////////////////////////////////////////////////////
+    string current_time_step_string;
+    stringstream out;
+    out<<current_time_step;
+    current_time_step_string = out.str();
+    string filename_end = filename + current_time_step_string + ".xyz";
+    //writes to file
+    molecule.writeVMDfile(filename_end,"comment");
+
+    ///////////////////////////////////////////////////////////////////////
+    //calculates the new velocity and position with the Verlet algorithm//
+    /////////////////////////////////////////////////////////////////////
     int length = molecule.numberOfAtoms;
     vec v_new(3);
     vec v(3);
@@ -42,30 +56,26 @@ Lattice Verlet_solver::solve_one_time_step(double t, double dt, char* filename){
         v = a->velocity;
         v_new = v + force(t)/(2*molecule.mass)*dt + force(t+dt)/(2*molecule.mass)*dt;
         r = a->position;
-        r_new = r + (v + force(t)/(2*molecule.mass)*dt)*dt;
-        a->position = r;
-        a->velocity = v;
+        vec dr = (v + force(t)/(2*molecule.mass)*dt)*dt;
+        cout<<dr<<endl;
+        r_new = r + dr;
+        a->position = r_new;
+        a->velocity = v_new;
     }
 
 
-    //writeVMDfile_Verlet(filename, 'comment');
+    //update current_time_step;
     current_time_step++;
     return molecule;
 }
 
 vec Verlet_solver::force(double t){
+    /*
+      returns a vec of zeros
+      */
     vec ze = zeros(3,1);
     return ze;
 }
 
 
-void Verlet_solver::writeVMDfile_Verlet(char* filename, string comment){
-//    char buffer[100];
-//    char time_step_char[64];
-//    char end_xyz[46] = ".xyz";
-//    sprintf(time_step_char, "%d", current_time_step);
-//    strcat(filename, time_step_char);
-//    strcat(filename, end_xyz);
-//    molecule.writeVMDfile(filename,comment);
-//    current_time_step++;
-}
+

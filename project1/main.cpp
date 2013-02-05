@@ -25,9 +25,9 @@ int main()
     Lattice l(2,2,2,"Ar", b, T,mass);
     //l.writeVMDfile("test.xyz", "comment");
     Verlet_solver v(l);
-    char file[100] = "test0";
+    string file = "test";
     //v.solve_one_time_step(0.1, 0.1, file);
-    v.solve(0,10,0.1,file);
+    v.solve(0,100,0.001,file);
 
 
 
