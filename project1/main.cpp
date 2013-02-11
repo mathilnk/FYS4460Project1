@@ -6,6 +6,7 @@
 #include <armadillo>
 #include"normal.hpp"
 #include "verlet_solver.h"
+#include<time.h>
 
 
 using namespace std;
@@ -26,9 +27,12 @@ int main()
     Lattice l(8,8,8,"Ar", b, T,mass);
     //l.writeVMDfile("test.xyz", "comment");
     Verlet_solver v(l);
-    string file = "teit_ting";
+    string file = "ny_versjon";
     //v.solve_one_time_step(0.1, 0.1, file);
-    v.solve(0,80,0.01,file);
+    clock_t start = clock();
+    v.solve(0,30,0.01,file);
+    clock_t stop = clock();
+    cout<<(stop-start)*1000/CLOCKS_PER_SEC<<" ms"<<endl;
 
 
 

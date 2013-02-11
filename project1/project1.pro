@@ -8,12 +8,14 @@ SOURCES += main.cpp \
     atom.cpp \
     facecube.cpp \
     normal.cpp \
-    verlet_solver.cpp
+    verlet_solver.cpp \
+    cellsolver.cpp
 
 HEADERS += \
     lattice.h \
     atom.h \
     facecube.h\
     normal.hpp \
-    verlet_solver.h
+    verlet_solver.h \
+    cellsolver.h
 

@@ -11,6 +11,7 @@ public:
     Atom(vec position, vec velocity, string element);
     vec  position;
     vec velocity;
+    vec force;
     string element;
 };
 

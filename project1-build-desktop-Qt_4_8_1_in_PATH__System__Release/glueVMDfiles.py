@@ -1,21 +1,27 @@
 from scitools.std import *
-import sys;
+import sys, os, glob;
 if(len(sys.argv)>2):
+    project_dir = "./project1-build-desktop-Qt_4_8_1_in_PATH__System__Release/"
+    results_dir = "./results/"
     base_name = sys.argv[1]
     num_files = eval(sys.argv[2])
-    glued_name = base_name + "_glued.xyz"
-    glued_file = open(glued_name, 'w');
+    glued_name = "glued_" + base_name + ".xyz";
+    glued_file = open(results_dir + glued_name, 'w');
 
     current = 0;
+    
 
     for i in range(num_files):
         filename = base_name + str(current) + ".xyz";
-        infile = open(filename, 'r');
+        infile = open(project_dir+filename, 'r');
         filestring = infile.read();
         glued_file.write(filestring);
         current+=1;
         infile.close();
     glued_file.close();
+    if(len(sys.argv)>3):
+	for i in glob.glob("%s*.xyz"%base_name):
+		os.remove(i)
+	
 else:
     print "you forgot the commandline arguments.\nsys.argv[1] = basename\nsys.argv[2] = number of files"
-

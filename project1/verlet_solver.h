@@ -16,6 +16,8 @@ private:
     void writeVMDfile_Verlet(char*filename, string comment);
     vec force_between(vec r_1, vec r_2);
     vec force_on(vec r, int index);
+    void findForces();
+    void cleanForces();
 };
 
 #endif // VERLET_SOLVER_H

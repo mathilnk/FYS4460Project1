@@ -17,6 +17,10 @@ void Verlet_solver::solve(double t_start,int timesteps, double dt, string filena
       */
 
     double time = t_start;
+    ///////////////////////////////////////////////////
+    //before the first timestep: calculate the forces//
+    ///////////////////////////////////////////////////
+    findForces();
     for(int i=0;i<timesteps;i++){
         time = t_start + dt*i;
         this->molecule = solve_one_time_step(time, dt, filename);
@@ -70,9 +74,9 @@ Lattice Verlet_solver::solve_one_time_step(double t, double dt, string filename)
         Atom* atm = molecule.allAtoms[i];
         v = atm->velocity;
         r = atm->position;
-        v_half = v + force_on(r, i)/(2)*dt;
+        //v_half = v + force_on(r, i)/(2)*dt;
+        v_half = v + atm->force/2*dt;
         r_new = r + v_half*dt;
-        //v_new = v_half + force(r_new)/(2*m)*dt;
         v_new = v_half; //saves v_half so I dont have to calculate it again in the loop to find v_new
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,14 +92,18 @@ Lattice Verlet_solver::solve_one_time_step(double t, double dt, string filename)
         atm->position = r_new;
         atm->velocity = v_new;
     }
-
+    ///////////////////////////////////////////
+    //finds the forces with the new positions//
+    ///////////////////////////////////////////
+    findForces();
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //loop to find v_new, now the atoms all have a new position. v_half is saved in atm->velocity//
     ///////////////////////////////////////////////////////////////////////////////////////////////
     for(int i=0;i<n_atoms;i++){
         Atom * atm = molecule.allAtoms[i];
         v_half = atm->velocity;
-        v_new = v_half + force_on(atm->position, i)/(2)*dt;
+        //v_new = v_half + force_on(atm->position, i)/(2)*dt;
+        v_new = v_half + atm->force/2*dt;
         atm->velocity = v_new;
     }
 
@@ -158,7 +166,30 @@ vec Verlet_solver::force_between(vec r_1, vec r_2){
     return f;
 }
 
+void Verlet_solver::cleanForces(){
+    vec z = zeros(3,1);
+    Atom * atm;
+    for(int i=0; i<molecule.numberOfAtoms;i++){
+        atm = molecule.allAtoms[i];
+        atm->force = z;
+    }
+}
 
+void Verlet_solver::findForces(){
+    cleanForces();
+    int n_atoms = molecule.numberOfAtoms;
+    vec f;
+    Atom * atom_1;
+    Atom * atom_2;
+    for(int i=0;i<n_atoms;i++){
+        atom_1 = molecule.allAtoms[i];
+        for(int j=i+1;j<n_atoms;j++){
+            atom_2 = molecule.allAtoms[j];
+            f = force_between(atom_1->position, atom_2->position);
+            atom_1->force = atom_1->force + f;
+            atom_2->force = atom_2->force - f;
 
+        }
+    }
 
-
+}
