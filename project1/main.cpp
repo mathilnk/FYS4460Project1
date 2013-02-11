@@ -17,20 +17,22 @@ int main()
     double T, mass, b;
     string element = "Ar";
     T = 100; //K
-    mass =39.948*1.66e-27;
+    //mass =39.948*1.66e-27;
+    mass = 39.948; //amu
     b = 5.26; //Å
     //b=1;
     //T = 200;
     //mass = 1;
-    Lattice l(2,2,2,"Ar", b, T,mass);
+    Lattice l(8,8,8,"Ar", b, T,mass);
     //l.writeVMDfile("test.xyz", "comment");
     Verlet_solver v(l);
-    string file = "test";
+    string file = "teit_ting";
     //v.solve_one_time_step(0.1, 0.1, file);
-    v.solve(0,100,0.001,file);
+    v.solve(0,80,0.01,file);
 
 
 
     return 0;
 }
+
 

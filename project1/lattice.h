@@ -18,11 +18,11 @@ public:
     vector<Atom*> allAtoms;
     void writeVMDfile(string Filename, string comment);
     void findPosAndMakeAtoms(vec posBase);
-    void findPosAndMakeAtoms2(vec posBase);
-    void makeEndAtoms();
     double T;
     int numberOfAtoms;
     double mass;
+    double Lx,Ly,Lz;
+    double k;
 
 private:
     int Nx,Ny,Nz,N;
@@ -31,7 +31,7 @@ private:
     void makeLattice();
 
     double gauss(double s, double mean);
-    double s,mean,k;
+    double s,mean;
     double pi;
     int seed;
 

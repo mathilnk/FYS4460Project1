@@ -6,105 +6,85 @@
 Lattice::Lattice(){}
 Lattice::Lattice(int Nx, int Ny, int Nz, string element, double b, double T, double mass)
 {
+    /*
+      Constructor. Makes the lattice
+      */
+    double T0 = 119.74;//K
+    double L0 = 3.405;//AAngstrom
     this->Nx = Nx;
     this->Ny = Ny;
     this->Nz = Nz;
     this->N = Nx*Ny*Nz;
     this->numberOfAtoms = N*4;
     this->element = element;
-    this->b = b;
+    this->b = b/L0;
     this->T = T;
-    this->k =1.38e-23; //J/K
-    this->mass = mass;
-    this->s = sqrt(k*T/mass);
+
+    //this->k =1.38e-23; //J/K
+    k = 8.617e-5;//ev/K
+    //this->mass = mass*931e6;//ev/c^2
+    //this->s = sqrt(k*T/mass)*1e-5;//aangstrom per femtosekund
     //this->s = 144.0;
+    this->mass = 1;
+    this->s = sqrt(T/T0);
     cout<<s<<endl;
     this->mean = 0;
     this->pi = 3.1415;
     this->seed = 123456789;
+    this->Lx = (Nx)*this->b;
+    this->Ly = (Ny)*this->b;
+    this->Lz = (Nz)*this->b;
 
 
     makeLattice();
 }
 
 void Lattice::makeLattice(){
+    /*
+      Private
+      */
     vec posBase(3);
     for(int i=0;i<Nx;i++){
         for(int j=0;j<Ny;j++){
             for(int k=0;k<Nz; k++){
                 posBase<<i*b<<j*b<<k*b;
-                findPosAndMakeAtoms2(posBase);
+                findPosAndMakeAtoms(posBase);
             }
         }
     }
-    //makeEndAtoms();
 }
 
 
-void Lattice::makeEndAtoms(){
-//top square
-    vec pos, vec;
-    Atom *atom1,*atom2,*atom3,*atom4,*atom5,*atom6,*atom7;
-    vec<<0<<0<<0;
-    pos<<(Nx-1)*b<<(Ny-1)*b<<Nz*b;
-    atom1= new Atom(pos,vec, element);
-    allAtoms.push_back(atom1);
-
-    pos[0] +=b;
-    atom2= new Atom(pos,vec, element);
-
-    allAtoms.push_back(atom2);
-
-    pos[1]+=b;
-    atom3= new Atom(pos,vec,element);
-
-    allAtoms.push_back(atom3);
-
-
-    pos[0]-=b;
-    atom4= new Atom(pos,vec, element);
-
-    allAtoms.push_back(atom4);
-
-    //bottom square
-
-    pos<<Nx*b<<(Ny-1)*b<<(Nz-1)*b;
-    atom5= new Atom(pos,vec, element);
-
-    allAtoms.push_back(atom5);
-
-    pos[1] +=b;
-    atom6= new Atom(pos,vec, element);
-
-    allAtoms.push_back(atom6);
-
-    pos[0]-=b;
-    atom7= new Atom(pos,vec, element);
-
-    allAtoms.push_back(atom7);
 
 
 
 
 
-
-
-}
 
 void Lattice::writeVMDfile(string filename, string comment){
+    /*
+      This method writes a VMD-formatted file called filename.
+      */
     ofstream writeToFile;
     numberOfAtoms = allAtoms.size();
     const char* filename_ch = filename.c_str();
     writeToFile.open(filename_ch);
     writeToFile<<numberOfAtoms<<endl;
     writeToFile<<comment<<endl;
+
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    //runs through the atoms in allAtoms, and write the position and velocity to file//
+    ///////////////////////////////////////////////////////////////////////////////////
     for(int i=0;i<numberOfAtoms;i++){
         Atom* a = allAtoms[i];
         writeToFile<<element<<" ";
         for(int j=0;j<3;j++){
+            //AAngstrom
             writeToFile<<a->position[j]<<" ";
         }
         for(int k=0;k<3;k++){
+             //aangstrom per femtosekund
             writeToFile<<a->velocity[k]<<" ";
         }
         writeToFile<<"\n";
@@ -113,10 +93,11 @@ void Lattice::writeVMDfile(string filename, string comment){
 
 }
 
-void Lattice::findPosAndMakeAtoms2(vec posBase){
-    ////////////////////
-    //modifiser denne//
-    //////////////////
+void Lattice::findPosAndMakeAtoms(vec posBase){
+    /*
+    given a position base x,y,z, this method creates four atoms as described in the exercise.
+    The result is a face-centered cubic lattice
+    */
     vec posxy(3);
     vec posyz(3);
     vec poszx(3);
@@ -147,29 +128,12 @@ void Lattice::findPosAndMakeAtoms2(vec posBase){
     allAtoms.push_back(base);
 
 }
-void Lattice::findPosAndMakeAtoms(vec posBase){
-    vec posxy(3);
-    vec posyz(3);
-    vec poszx(3);
-    posxy<<0.5*b<<0.5*b<<0;
-    posyz<<0<<0.5*b<<0.5*b;
-    poszx<<0.5*b<<0<<0.5*b;
-    posxy+=posBase;
-    posyz+=posBase;
-    poszx+=posBase;
-    vec velo(3);
-    velo<<0<<0<<0;
-    Atom *xy = new Atom(posxy,velo, element);
-    Atom *yz = new Atom(posyz,velo, element);
-    Atom *zx = new Atom(poszx,velo, element);
-    Atom *base = new Atom(posBase,velo, element);
-    allAtoms.push_back(xy);
-    allAtoms.push_back(yz);
-    allAtoms.push_back(zx);
-    allAtoms.push_back(base);
-}
+
 
 double Lattice::gauss(double s, double mean){
+    /*
+      finds a random number from a gaussian distribution. the seed changes when the method is called
+      */
 
     return r8_normal(mean,s,seed);
 }
