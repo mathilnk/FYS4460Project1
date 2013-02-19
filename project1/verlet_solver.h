@@ -2,6 +2,7 @@
 #define VERLET_SOLVER_H
 #include"lattice.h"
 #include<math.h>
+#include<time.h>
 
 class Verlet_solver
 {

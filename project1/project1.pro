@@ -3,13 +3,19 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
+
+
 SOURCES += main.cpp \
     lattice.cpp \
     atom.cpp \
     facecube.cpp \
     normal.cpp \
     verlet_solver.cpp \
-    cellsolver.cpp
+    cellsolver.cpp \
+    cell.cpp \
+    cellcontainer.cpp \
+    atomnode.cpp \
+    energytest.cpp
 
 HEADERS += \
     lattice.h \
@@ -17,5 +23,9 @@ HEADERS += \
     facecube.h\
     normal.hpp \
     verlet_solver.h \
-    cellsolver.h
+    cellsolver.h \
+    cell.h \
+    cellcontainer.h \
+    atomnode.h \
+    energytest.h
 

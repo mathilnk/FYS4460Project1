@@ -17,6 +17,7 @@ void Verlet_solver::solve(double t_start,int timesteps, double dt, string filena
       */
 
     double time = t_start;
+    clock_t start = clock();
     ///////////////////////////////////////////////////
     //before the first timestep: calculate the forces//
     ///////////////////////////////////////////////////
@@ -25,6 +26,8 @@ void Verlet_solver::solve(double t_start,int timesteps, double dt, string filena
         time = t_start + dt*i;
         this->molecule = solve_one_time_step(time, dt, filename);
     }
+    clock_t stop = clock();
+    cout<<(stop-start)/CLOCKS_PER_SEC<< " s for Verlet Solver"<<endl;
 
 }
 
@@ -127,7 +130,7 @@ vec Verlet_solver::force_on(vec r, int index){
         }
 
     }
-//cout<<f<<endl;
+
     return f;
 }
 
@@ -175,7 +178,7 @@ void Verlet_solver::cleanForces(){
     }
 }
 
-void Verlet_solver::findForces(){
+ void Verlet_solver::findForces(){
     cleanForces();
     int n_atoms = molecule.numberOfAtoms;
     vec f;

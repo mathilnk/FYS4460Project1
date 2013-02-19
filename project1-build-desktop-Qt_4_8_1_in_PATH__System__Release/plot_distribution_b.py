@@ -2,7 +2,9 @@
 import numpy as np
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
-filename = "unitcell2.xyz";
+import sys
+#filename = "unitcell2.xyz";
+filename = sys.argv[1] + ".xyz";
 infile = open(filename, 'r');
 lines = infile.readlines();
 length = eval(lines[0]);
@@ -33,18 +35,18 @@ print s_vx,s_vy, s_vz
 
 
 # the histogram of the data
-nv, binsv, patchesv = plt.hist(v, 50, normed=1, facecolor='green', alpha=0.75, histtype='step')
-nx, binsx, patchesx = plt.hist(vx, 50, normed=1, facecolor='blue', alpha=0.75, histtype='step')
-ny, binsy, patchesy = plt.hist(vy, 50, normed=1, facecolor='red', alpha=0.75, histtype='step')
+#nv, binsv, patchesv = plt.hist(v, 50, normed=1, facecolor='green', alpha=0.75, histtype='step')
+#nx, binsx, patchesx = plt.hist(vx, 50, normed=1, facecolor='blue', alpha=0.75, histtype='step')
+#ny, binsy, patchesy = plt.hist(vy, 50, normed=1, facecolor='red', alpha=0.75, histtype='step')
 nz, binsz, patchesz = plt.hist(vz, 50, normed=1, facecolor='black', alpha=0.75, histtype='step')
 
 
 
-
-#plt.xlabel('velocity')
-#plt.ylabel('Distribution')
+plt.xlabel('velocity')
+plt.ylabel('Distribution')
 #plt.title(r'$\mathrm{Histogram\ of\ IQ:}\ \mu=100,\ \sigma=15$')
 #plt.axis([40, 160, 0, 0.03])
 #plt.grid(True)
+plt.savefig(sys.argv[1]+".png");
 
 plt.show()
