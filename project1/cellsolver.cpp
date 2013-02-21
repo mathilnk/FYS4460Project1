@@ -29,13 +29,19 @@ CellSolver::CellSolver(int CellNx, int CellNy, int CellNz, int Nx, int Ny, int N
     this->element = element;
     this->mean = 0;
     this->sig= sqrt(T/T0);
+    this->T = T/T0;
+
     initializeContainer();
+
     current_time_step = 0;
     counter = 0;
     volume = Nx*Ny*Nz*this->b*this->b*this->b;
     d_pressure = 0;
     current_displacement=0;
+    numOfBins = CellNx*100;
+    radial_distribution = zeros(numOfBins, 1);
     //displacement = 0;
+
 
 
 
@@ -46,19 +52,29 @@ CellSolver::CellSolver(int CellNx, int CellNy, int CellNz, int Nx, int Ny, int N
 
 
 
-void CellSolver::solve(double t_start, int timesteps, double dt, string filename, bool writeVMD, bool writeMeasurements){
+void CellSolver::solve(double t_start, int timesteps, double dt, string filename, bool writeVMD, bool writeMeasurements, double T_bath,bool Berendsen, bool Andersen){
     /*
       Filename should be without ending. If you want the files to be called test*.xyz, just write filename = test.
       This method solves for many timesteps, and for each timestep a xyz file is made.
       */
 
     double time = t_start;
+    if(T_bath ==0){
+        this->T_bath = this->T;
+    }else{
+        this->T_bath = T_bath/T0;
+    }
+
+    this->Berendsen = Berendsen;
+    this->Andersen = Andersen;
 
     this->kin_energy = zeros(timesteps,1);
     this->pot_energy = zeros(timesteps,1);
     this->pressure = zeros(timesteps,1);
-    this->temperature = zeros(timesteps,1);
+    this->temperature = zeros(timesteps+1,1);
     this->displacement = zeros(timesteps,1);
+    this->temperature[0] = T;
+    count = 0;
     //displacement = 0;
 
 
@@ -67,10 +83,12 @@ void CellSolver::solve(double t_start, int timesteps, double dt, string filename
     ///////////////////////////////////////////////////
     clock_t start = clock();
 
-    findForces();
+    //findForces();
+    //findKinetic();
 
 
     for(int i=0;i<timesteps;i++){
+
         cout<<"tidssteg: "<<current_time_step<<endl;
         time = t_start + dt*i;
         kin_energy[i]=0;
@@ -79,12 +97,13 @@ void CellSolver::solve(double t_start, int timesteps, double dt, string filename
         d_pressure =0;
 
         solve_one_time_step(time, dt, filename, writeVMD, writeMeasurements);
+        //cout<<count<<endl;
 
     }
     clock_t stop = clock();
 
     if(writeMeasurements){
-        cout<<filename<<endl;
+        ////cout<<filename<<endl;
         writeMeasurementsToFile(filename+"_energy.txt");
 
     }
@@ -110,13 +129,15 @@ void CellSolver::solve_one_time_step(double t, double dt, string filename, bool 
     current_time_step_string = out.str();
     string filename_end = filename + current_time_step_string + ".xyz";
     //finds the radial distribution function
-    vec g = findRadial();
-    cout<<g<<endl;
+    //vec g = findRadial();
+    ////cout<<g<<endl;
     //writes to file
     if(writeVMD){
         myContainer->writeVMDfile(filename_end,"comment", element);
     }
-    //cout<<"0 "<<d_energy<<endl;
+    writeRadialToFile(filename + current_time_step_string + "_radial.txt");
+
+    ////cout<<"0 "<<d_energy<<endl;
 
     ///////////////////////////////////////////////////////////////////////
     //calculates the new velocity and position with the Verlet algorithm//
@@ -138,6 +159,17 @@ void CellSolver::solve_one_time_step(double t, double dt, string filename, bool 
     Atom* atm;
     pressure_sum = 0;
 
+    //double temp = measureTemp();
+//    measureMeanSquareDisplacement();
+//    findRadial();
+//    d_pressure = myContainer->numberOfAtoms*temp/volume + 1/(6*volume)*pressure_sum;
+//    cout<<"Temperature: "<<temp*T0<<endl;
+//    cout<<"Pressure: "<<measurePressure()<<endl;
+//    cout<<"Kinetic energy: "<<kin_energy[current_time_step]<<endl;
+//    cout<<"Potential energy: "<<pot_energy[current_time_step]<<endl;
+
+//    cout<<"displacement: "<<displacement[current_time_step]<<endl;
+//    cout<<myContainer->numberOfAtoms<<endl;
     //////////////////////
     //loop to find r_new//
     //////////////////////
@@ -153,14 +185,16 @@ void CellSolver::solve_one_time_step(double t, double dt, string filename, bool 
             r = atm->position;
             //v_half = v + force_on(r, i)/(2)*dt;
             v_half = v + atm->force/2*dt;
-            r_new = r + v_half*dt;
+            dr = v_half*dt;
+            r_new = r + dr;
+            ////cout<<r_new<<endl;
             v_new = v_half; //saves v_half so I dont have to calculate it again in the loop to find v_new
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //Periodic boundary conditions (assume that a particle wont go further than 1000 systems away in the negative direction//
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            updateMeanSquareDisplacement(r_new,r);
+
             r_new[0] = fmod((r_new[0]+1000*Lx), Lx);
             r_new[1] = fmod((r_new[1]+1000*Ly), Ly);
             r_new[2] = fmod((r_new[2]+1000*Lz), Lz);
@@ -168,7 +202,9 @@ void CellSolver::solve_one_time_step(double t, double dt, string filename, bool 
 
 
             atm->position = r_new;
+            atm->real_position = atm->real_position + dr;
             atm->velocity = v_new;
+            //measureMeanSquareDisplacement(atm->real_position, atm->initial_position);
         }
     }
 
@@ -177,20 +213,34 @@ void CellSolver::solve_one_time_step(double t, double dt, string filename, bool 
     ///////////////////////////////////////////
     //finds the forces with the new positions//
     ///////////////////////////////////////////
-    //cout<<"before forces"<<endl;
+    ////cout<<"before forces"<<endl;
     updateCells();
+
     findForces();
-    //cout<<"before 2 loop"<<endl;
+
+    ////cout<<"before 2 loop"<<endl;
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //loop to find v_new, now the atoms all have a new position. v_half is saved in atm->velocity//
     ///////////////////////////////////////////////////////////////////////////////////////////////
+    double gamma;
+    if(Berendsen){
+        gamma = BerendsenThermo();
+    }else{
+        gamma = 1;
+    }
     for(int j=0;j<CellN;j++){
+
         currentCell = myContainer->myCells[j];
         for(int i=0;i<currentCell.numberOfAtoms;i++){
             atm = currentCell.myAtoms[i];
             v_half = atm->velocity;
             v_new = v_half + atm->force/2*dt;
-            atm->velocity = v_new;
+            v_new = gamma*v_new;
+            if(Andersen){
+                AndersenThermo(atm);
+            }else{
+                atm->velocity = v_new;
+            }
             d_energy += 0.5*(pow(atm->velocity[0],2) + pow(atm->velocity[1],2) + pow(atm->velocity[2],2));
             kin_energy[current_time_step]+=0.5*(pow(atm->velocity[0],2) + pow(atm->velocity[1],2) + pow(atm->velocity[2],2));
         }
@@ -200,6 +250,8 @@ void CellSolver::solve_one_time_step(double t, double dt, string filename, bool 
 
 
     double temp = measureTemp();
+    measureMeanSquareDisplacement();
+    findRadial();
     d_pressure = myContainer->numberOfAtoms*temp/volume + 1/(6*volume)*pressure_sum;
     cout<<"Temperature: "<<temp*T0<<endl;
     cout<<"Pressure: "<<measurePressure()<<endl;
@@ -215,14 +267,26 @@ void CellSolver::solve_one_time_step(double t, double dt, string filename, bool 
 
 
 void CellSolver::updateCells(){
+
+//    Cell currentCell;
+//    for(int j=0;j<CellN;j++){
+//        currentCell = myContainer->myCells[j];
+//        currentCell.myAtoms.clear();
+//    }
+//    for(int i=0;i<myContainer->numberOfAtoms;i++){
+//        myContainer->addAtom(myContainer->allAtoms[i]);
+//    }
     Cell currentCell;
     CellContainer* buffer = new CellContainer(CellNx, CellNy, CellNz, r_cut);
 
     for(int j=0;j<CellN;j++){
         currentCell = myContainer->myCells[j];
+        //cout<<j<<endl;
         for(int i=0;i<currentCell.numberOfAtoms;i++){
+            ////cout<<i<<" "<<currentCell.numberOfAtoms<<endl;
             buffer->addAtom(currentCell.myAtoms[i]);
         }
+        ////cout<<j<<" "<<CellN<<endl;
         currentCell.myAtoms.clear();
     }
     myContainer = buffer;
@@ -252,10 +316,11 @@ void CellSolver::findForces(){
     cleanForces();
     Cell currentCell;
     AtomNode* currentNode1, *currentNode2;
-    Atom* atom_1, *atom_2;
+    Atom *atom_1, *atom_2;
     ////////////////////////////////////////////////////////////////
     //first find the forces between the particles in the same cell//
     ////////////////////////////////////////////////////////////////
+    cout<<"cellN"<<CellN<<endl;
     for(int j=0;j<CellN;j++){
         currentCell = myContainer->myCells[j];
 
@@ -265,8 +330,10 @@ void CellSolver::findForces(){
             for(int k=i+1;k<currentCell.numberOfAtoms;k++){
                 atom_2 = currentCell.myAtoms[k];
                 vec f = force_between(atom_1->position,atom_2->position);
+                //cout<<atom_1->force<<endl;
                 atom_1->force = atom_1->force + f;
                 atom_2->force = atom_2->force - f;
+
             }
         }
     }
@@ -282,12 +349,15 @@ void CellSolver::findForces(){
     //Now I have to calculate the forces between atoms in different cells//
     ///////////////////////////////////////////////////////////////////////
     Cell currentCell1, currentCell2;
-    Col<int> myNeighbors;
-
+    vector<int> myNeighbors;
+    //cout<<CellN<<endl;
     for(int j=0;j<CellN;j++){
         myNeighbors = myContainer->findMyNeighbors(j);
+        //cout<<myNeighbors.size()<<endl;
         currentCell1 = myContainer->myCells[j];
-        for(int i=0;i<26;i++){
+        for(int i=0;i<myNeighbors.size();i++){
+            //cout<<"crraaaaaaazy"<<endl;
+            if(myNeighbors[i]<CellN){
             currentCell2 = myContainer->myCells[myNeighbors[i]];
 
             for(int k=0;k<currentCell1.numberOfAtoms;k++){
@@ -296,15 +366,30 @@ void CellSolver::findForces(){
                     atom_2 = currentCell2.myAtoms[p];
                     vec f = force_between(atom_1->position,atom_2->position, false);
                     atom_1->force = atom_1->force + f;
-                    //atom_2->force = atom_2->force - f;
+                    atom_2->force = atom_2->force - f;
 
                 }
             }
         }
+
     }
+
+}
 }
 
 
+void CellSolver::updateKinetic(vec velocity){
+    kin_energy[current_time_step] += 0.5*(velocity[0]*velocity[0] + velocity[1]*velocity[1] + velocity[2]*velocity[2]);
+}
+void CellSolver::findKinetic(){
+    /*should be used before the first timestep. temperature[0] is the initial temperature
+     */
+    Atom *atm;
+    for(int i=0;i<myContainer->numberOfAtoms;i++){
+        atm = myContainer->allAtoms[i];
+        updateKinetic(atm->velocity);
+    }
+}
 
 vec CellSolver::force_between(vec r_1, vec r_2, bool sameCell){
     /*
@@ -333,17 +418,32 @@ vec CellSolver::force_between(vec r_1, vec r_2, bool sameCell){
     r[2] = (fabs(new_r_z_min)<fabs(new_r_z_plus))*(fabs(new_r_z_min)<fabs(r[2]))*new_r_z_min  +  (fabs(new_r_z_plus)<fabs(new_r_z_min))*(fabs(new_r_z_plus)<fabs(r[2]))*new_r_z_plus    +   (fabs(r[2])<fabs(new_r_z_plus))*(fabs(r[2])<fabs(new_r_z_min))*r[2];
 
 
-    double length = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-    length = std::max(0.9, length);
-    vec f = -24*(1/pow(length,4)-2/pow(length,7))*r;
-    if(sameCell){
-        pot_energy[current_time_step] -=4*(1/pow(length,6) - 1/pow(length,3));
+    double l = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+//    if(l<0.9){
+//        count++;
+//    }
+    double length = std::max(0.9, l);
+
+    vec f = -24*(1/pow(length,4)-2/pow(length,7))*r*length/l;
+    if(l>count){
+        count = f[0];
+    }
+    if(l>count){
+        count = f[1];
+    }
+    if(l>count){
+        count = f[2];
+    }
+    if(true){
+        pot_energy[current_time_step] +=4*(1/pow(length,6) - 1/pow(length,3));
+        pressure_sum = pressure_sum + f[0]*r[0] + f[1]*r[1] + f[2]*r[2];
     }else{
         pot_energy[current_time_step] -= 2*(1/pow(length,6) - 1/pow(length,3));
+        pressure_sum = pressure_sum + 0.5*(f[0]*r[0] + f[1]*r[1] + f[2]*r[2]);
     }
     d_energy-=4*(1/pow(length,6) - 1/pow(length,3));
-    //cout<<4*(1/pow(length,6) - 1/pow(length,3))<<endl;
-    pressure_sum = pressure_sum + f[0]*r[0] + f[1]*r[1] + f[2]*r[2];
+    ////cout<<4*(1/pow(length,6) - 1/pow(length,3))<<endl;
+
     return f;
 }
 
@@ -351,7 +451,9 @@ vec CellSolver::force_between(vec r_1, vec r_2, bool sameCell){
 
 void CellSolver::initializeContainer(){
     myContainer = new CellContainer(CellNx, CellNy, CellNz, r_cut);
+
     makeLattice();
+
 }
 
 
@@ -368,6 +470,7 @@ void CellSolver::makeLattice(){
             }
         }
     }
+    myContainer->first = false;
 }
 
 
@@ -422,7 +525,7 @@ void CellSolver::findPosAndMakeAtoms(vec posBase){
 
 double CellSolver::measureTemp(){
     double temp = 2*kin_energy[current_time_step]/(3*myContainer->numberOfAtoms);
-    temperature[current_time_step] = temp;
+    temperature[current_time_step+1] = temp;
     return temp;
 }
 
@@ -436,27 +539,35 @@ double CellSolver::measurePressure(){
 
 
 
-void CellSolver::updateMeanSquareDisplacement(vec r_new, vec r_old){
-    current_displacement += (r_new[0] - r_old[0])*(r_new[0] - r_old[0]) + (r_new[1] - r_old[1])*(r_new[1] - r_old[1]) + (r_new[2] - r_old[2])*(r_new[2] - r_old[2])/myContainer->numberOfAtoms;
-    displacement[current_time_step] = current_displacement;
+void CellSolver::measureMeanSquareDisplacement(){
+    Atom * atm;
+    double dis = 0;
+    for(int i=0;i<myContainer->numberOfAtoms;i++){
+        atm = myContainer->allAtoms[i];
+        dis += (atm->real_position[0] - atm->initial_position[0])*(atm->real_position[0] - atm->initial_position[0]) + (atm->real_position[1] - atm->initial_position[1])*(atm->real_position[1] - atm->initial_position[1]) + (atm->real_position[2] - atm->initial_position[2])*(atm->real_position[2] - atm->initial_position[2]);
+    }
+    dis/=myContainer->numberOfAtoms;
+    displacement[current_time_step] = dis;
+    //current_displacement = (r_real[0] - r_initial[0])*(r_real[0] - r_initial[0]) + (r_real[1] - r_initial[1])*(r_real[1] - r_initial[1]) + (r_real[2] - r_initial[2])*(r_real[2] - r_initial[2])/myContainer->numberOfAtoms;
+    //displacement[current_time_step] += current_displacement;
 }
 void CellSolver::writeMeasurementsToFile(string filename){
     ofstream file;
     string newfilename = "/home/mathilde/Dropbox/V2013/FYS4460/FYS4460Project1/results/" + filename;
     const char* filename_ch = newfilename.c_str();
-    cout<<filename_ch<<endl;
+    //cout<<filename_ch<<endl;
     file.open(filename_ch);
     file<<"dt: "<<dt<<" CellNx: "<<CellNx<<" b: "<<b*L0<<" noParticles: "<<myContainer->numberOfAtoms<<endl;
-    file<<"Kinetic energy     Potential energy   Total energy   Temperature         Pressure   Average displacement"<<endl;
+    file<<"Kinetic energy     Potential energy   Total energy   Temperature         Pressure   Average displacement    Radial distribution"<<endl;
     for(int i=0;i<current_time_step;i++){
-        file<<kin_energy[i]<<"            "<<pot_energy[i]<<"               "<<kin_energy[i] + pot_energy[i]<<"         "<<temperature[i]<<"         "<<pressure[i]<<"         "<<displacement[i]<<endl;
+        file<<kin_energy[i]<<"            "<<pot_energy[i]<<"               "<<kin_energy[i] + pot_energy[i]<<"         "<<temperature[i]<<"         "<<pressure[i]<<"         "<<displacement[i]<<endl;//"           "<<radial_distribution[i]<<endl;
     }
 }
 
 void CellSolver::writeEnergyToFile(string filename){
     ofstream file;
     const char* filename_ch = filename.c_str();
-    cout<<filename_ch<<endl;
+    //cout<<filename_ch<<endl;
     file.open(filename_ch);
     for(int i=0;i<current_time_step;i++){
         file<<kin_energy[i]<<"      "<<pot_energy[i]<<"     "<<kin_energy[i] + pot_energy[i]<<endl;
@@ -464,12 +575,21 @@ void CellSolver::writeEnergyToFile(string filename){
 
 }
 
+void CellSolver::writeRadialToFile(string filename){
+    ofstream file;
+    const char * filename_ch = filename.c_str();
+    file.open(filename_ch);
+    for(int i=0;i<numOfBins;i++){
+        file<<radial_distribution[i]<<endl;
+    }
+}
+
 vec CellSolver::findRadial(){
     /*
       finds the radial distribution g(r)
       */
-    double numOfBins = CellNx*10;
-    vec bins = zeros(numOfBins, 1);
+    //double numOfBins = CellNx*10;
+    //vec bins = zeros(numOfBins, 1);
     Atom * atm1;
     Atom * atm2;
     double distance;
@@ -504,16 +624,16 @@ vec CellSolver::findRadial(){
 
             distance = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
             index = distance/binSize;
-            //cout<<index<<" "<<binSize<<" "<<numOfBins<<endl;
+            ////cout<<index<<" "<<binSize<<" "<<numOfBins<<endl;
             if(index>maxIndex){
                 maxIndex = index;
             }
-            bins[index]+=1;
+            radial_distribution[index]+=1;
 
         }
     }
-    cout<<"max: "<<maxIndex<<endl;
-    return bins;
+    ////cout<<"max: "<<maxIndex<<endl;
+    return radial_distribution;
 }
 
 double CellSolver::gauss(double s, double mean){
@@ -523,4 +643,24 @@ double CellSolver::gauss(double s, double mean){
 
     //return fmod(rand(),(4*s)) - 2*s;
     return r8_normal(mean,s,seed);
+}
+
+double CellSolver::BerendsenThermo(){
+    double tau = 10*dt;
+    double gamma = sqrt(1 + dt/tau*(this->T_bath/this->temperature[current_time_step] -1));
+    return gamma;
+
+}
+
+void CellSolver::AndersenThermo(Atom * atm){
+    double rand_num = (double) rand()/RAND_MAX;
+    ////cout<<rand_num<<endl;
+    double tau = dt*10;
+    if(rand_num<dt/tau){
+        double s = sqrt(this->T_bath);
+        vec new_velo(3);
+        new_velo<<gauss(s,0)<<gauss(s,0)<<gauss(s,0);
+        atm->velocity = new_velo;
+
+    }
 }

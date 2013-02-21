@@ -1,0 +1,4 @@
+dt: 0.01 CellNx: 8 b: 5.26 noParticles: 16384
+Kinetic energy     Potential energy   Total energy   Temperature         Pressure   Average displacement    Radial distribution
+19697.4            139032               158729         0.835143         0.905995         0.000249534
+17531.6            136855               154386         0.801488         1.25473         0.000961786

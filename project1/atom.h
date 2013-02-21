@@ -10,6 +10,7 @@ public:
     Atom();
     Atom(vec position, vec velocity, string element);
     vec  position;
+    vec  real_position;
     vec initial_position;
     vec velocity;
     vec force;

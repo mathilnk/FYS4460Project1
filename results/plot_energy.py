@@ -37,7 +37,7 @@ def plot_pressure():
 	return 0;
 def plot_pressure_T():
 	plt.figure()
-	plt.plot(temperature[100:], pressure[100:]);
+	plt.plot(temperature[100:], pressure[100:], '.');
 	plt.xlabel('Temperature');
 	plt.ylabel('Pressure');
 	plt.title('Pressure as a function of Temperature - dimensionless');
@@ -54,7 +54,13 @@ def plot_displacement():
 	print "Total displacement: ", displacement[-1];
 	print "Diffusion constant: ", diffusion_constant;
 	return 0;
-
+def plot_radial():
+	plt.figure()
+	plt.plot(radial_dist);
+	plt.xlabel('r');
+	plt.ylabel('Distribution');
+	plt.title("The radial distribution function g(r)");
+	return 0;
 
 if(len(sys.argv)>3):
 	filenamebase = sys.argv[1];
@@ -65,7 +71,7 @@ if(len(sys.argv)>3):
 	average_energies = np.zeros(numOfFiles);	
 	for i in range(numOfFiles):
 		fluct = 0;
-		filename = project_dir + filenamebase + "%d" %(i) + "_energy.txt";
+		filename = project_dir + filenamebase +  "_energy.txt";
 		infile = open(filename, 'r');
 		lines = (infile.readlines());
 
@@ -111,3 +117,5 @@ if(len(sys.argv)>3):
 
 	#plt.axis([0,5000,0,31000])
 	plt.show();
+else:
+	print "You forgot filname, number of files, and plottype"

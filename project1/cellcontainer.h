@@ -18,9 +18,11 @@ public:
     void removeAtom(int cellNumber, int atomNumber);
     void writeVMDfile(string filename, string comment, string element);
     Col<int> findCellPosition(int cellNumber);
-    Col<int> findMyNeighbors(int cellNumber);
+    vector<int> findMyNeighbors(int cellNumber);
+    bool first;
 private:
     void makeCells();
+
 };
 
 #endif // CELLCONTAINER_H

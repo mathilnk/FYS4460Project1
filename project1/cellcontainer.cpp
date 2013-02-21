@@ -8,6 +8,7 @@ CellContainer::CellContainer(int Nx, int Ny, int Nz, double r_cut)
     this->N = Nx*Ny*Nz;
     this->numberOfAtoms = 0;
     this->r_cut = r_cut;
+    first = true;
     makeCells();
 
 }
@@ -16,7 +17,9 @@ void CellContainer::makeCells(){
     /*
       Makes the cells. Should only be used in the constructor
       */
+    ////cout<<Nz<<endl;
     for(int i=0;i<N;i++){
+
         myCells.push_back(Cell());
     }
 }
@@ -24,8 +27,12 @@ void CellContainer::makeCells(){
 
 void CellContainer::addAtom(Atom * a){
     int cellNumber = findCellNumberForAtom(a);
+    ////cout<<myCells.size()<<endl;
     myCells[cellNumber].addAtom(a);
-    allAtoms.push_back(a);
+    if(first){
+        allAtoms.push_back(a);
+    }
+    ////cout<<a->force<<endl;
 
     numberOfAtoms++;
 }
@@ -45,7 +52,7 @@ int CellContainer::findCellNumberForAtom(Atom* a){
     for(int i=0;i<3;i++){
         cellPosition[i] = a->position[i]/r_cut;
     }
-
+    //cout<<a->position[0]<<endl;//atomet vi sender inn har ingen posisjon
     int cellNumber = findCellNumberForCell(cellPosition[0], cellPosition[1], cellPosition[2]);
 
     return cellNumber;
@@ -69,29 +76,62 @@ Col<int> CellContainer::findCellPosition(int cellNumber){
 
 
 
-Col<int> CellContainer::findMyNeighbors(int cellNumber){
+vector<int>CellContainer::findMyNeighbors(int cellNumber){
     Col<int> myPosition = findCellPosition(cellNumber);
-    //Col<int> neighborPosition = zeros<Col<int> >(3);
-    int neiPosX=0, neiPosY=0, neiPosZ=0;
-    Col<int> neighborNumbers = zeros<Col<int> >(26);
-    int index=0;
-    for(int z=-1;z<2;z++){
-        for(int y=-1;y<2;y++){
+    vector<int>neighborNumbers;
+    int neiPosX, neiPosY, neiPosZ;
+    if(myCells.size()<=1){
+        return neighborNumbers;
+    }
+    for(int z=1;z>=0;z--){
+        for(int y=1;y>=-z;y--){
             for(int x=-1;x<2;x++){
-                if(x==0 && y==0 && z==0){
-
-                }else{
+                if(z==0 && y==0){
+                    //legg på en på x
+                    x=1;
                     neiPosX = (myPosition[0] + x + Nx)%Nx;
                     neiPosY = (myPosition[1] + y + Ny)%Ny;
                     neiPosZ = (myPosition[2] + z + Nz)%Nz;
-                    neighborNumbers[index++] = findCellNumberForCell(neiPosX, neiPosY, neiPosZ);
+                    neighborNumbers.push_back(findCellNumberForCell(neiPosX, neiPosY, neiPosZ));
+                    break;
+
                 }
+                neiPosX = (myPosition[0] + x + Nx)%Nx;
+                neiPosY = (myPosition[1] + y + Ny)%Ny;
+                neiPosZ = (myPosition[2] + z + Nz)%Nz;
+                neighborNumbers.push_back(findCellNumberForCell(neiPosX, neiPosY, neiPosZ));
             }
         }
     }
     return neighborNumbers;
-
 }
+
+//vector<int> CellContainer::findMyNeighbors(int cellNumber){
+//    Col<int> myPosition = findCellPosition(cellNumber);
+//    //Col<int> neighborPosition = zeros<Col<int> >(3);
+//    int neiPosX=0, neiPosY=0, neiPosZ=0;
+//    vector<int> neighborNumbers;// = zeros<Col<int> >(26);
+//    if(myCells.size()<=1){
+//        return neighborNumbers;
+//    }
+//    int index=0;
+//    for(int z=0;z<2;z++){
+//        for(int y=0;y<2;y++){
+//            for(int x=0;x<2;x++){
+//                if(x==0 && y==0 && z==0){
+
+//                }else{
+//                    neiPosX = (myPosition[0] + x + Nx)%Nx;
+//                    neiPosY = (myPosition[1] + y + Ny)%Ny;
+//                    neiPosZ = (myPosition[2] + z + Nz)%Nz;
+//                    neighborNumbers.push_back(findCellNumberForCell(neiPosX, neiPosY, neiPosZ));
+//                }
+//            }
+//        }
+//    }
+//    return neighborNumbers;
+
+//}
 
 
 

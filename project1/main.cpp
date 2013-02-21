@@ -66,14 +66,17 @@ int main()
 //      cout<<test_cell.numberOfAtoms<<endl;
 
 
-
-
-      int CellNx = 44, CellNy = 44, CellNz = 44, Nx = 25, Ny=25, Nz=25;
+      /*double L0 = 3.405;
+      double r_cut = 3*L0;
+      int Nx = 8, Ny = 8, Nz = 8;
+      int CellNx, CellNy, CellNz;
       double b = 5.26;
       double T = 100;
-      double r_cut = Nx*b/CellNx;
+      CellNx = Nx*b/r_cut;
+      r_cut = Nx*b/(CellNx);
 
-      string element = "Ar";
+
+      string element = "Ar";*/
 
       //cells
       //CellSolver* mySolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz, b, T, r_cut, element);
@@ -81,12 +84,23 @@ int main()
       //string fileVerlet = "testVerlet";
       //mySolver->solve(0,300,0.006,fileCell);
 
-      double mass = 3;
+      //double mass = 3;
 
       //Verlet
-      //Lattice mol = Lattice(Nx,Ny,Nz, element,b, T, mass);
+      int CellNx,Nx;
+      double b, T,r_cut;
+      string element = "Ar";
+      Nx = 8;
+
+      CellNx = 1;
+      b = 5.28;
+      T = 100;
+      r_cut = b*Nx;
+      double mass = 1;
+      //Lattice mol = Lattice(Nx,Nx,Nx, element,b, T, mass);
       //Verlet_solver* vSolver = new Verlet_solver(mol);
-      //vSolver->solve(0,300,0.01,fileVerlet);
+      //string fileVerlet = "Verlet_solver_g";
+      //vSolver->solve(0,1000,0.01,fileVerlet);
       //mol->writeVMDfile("testLattice.xyz", "kommentar");
 
 
@@ -98,11 +112,12 @@ int main()
 //          c->addAtom(a);
 //      }
       new EnergyTest();
-cout<<r_cut<<endl;
 
+//cout<<r_cut<<endl;
 
-
-
+    //CellSolver *mySolver = new CellSolver(CellNx, CellNx, CellNx, Nx, Nx,Nx, b, T, r_cut,element);
+    //mySolver->writeToVMDfile("exercise_a.xyz", "Exercise a. Visualize Argon solid",element);
+    //mySolver->solve(0, 100,0.01,'Exercise_g', true, true);
 
 
 //    AtomNode* first = new AtomNode(a);

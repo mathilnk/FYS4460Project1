@@ -28,6 +28,9 @@ public:
     //Conversion factors
     double T0,L0;
     double dt;
+    int numOfBins;
+    double T_bath;
+    bool Andersen, Berendsen;
 
 
     //initialize
@@ -38,9 +41,10 @@ public:
     void writeToVMDfile(string filename, string comment, string element);
     void writeEnergyToFile(string filename);
     void writeMeasurementsToFile(string filename);
+    void writeRadialToFile(string filename);
     //Solve_methods
     void solve_one_time_step(double t, double dt, string filename, bool writeVMD,bool writeMeasurements);
-    void solve(double t_start, int timesteps, double dt, string filename, bool writeVMD=true,bool writeMeasurements=false);
+    void solve(double t_start, int timesteps, double dt, string filename, bool writeVMD=true,bool writeMeasurements=false, double T_bath = 0, bool Berendsen = false, bool Andersen=false);
 
     //forces
     void findForces();
@@ -50,9 +54,13 @@ public:
 
     //update and measurements
     void updateCells();
-    void updateMeanSquareDisplacement(vec r_new, vec r_old);
+    void measureMeanSquareDisplacement();
     double measureTemp();
     double measurePressure();
+    double BerendsenThermo();
+    void AndersenThermo(Atom *atm);
+    void findKinetic();
+    void updateKinetic(vec velocity);
 
     //other
     double gauss(double s, double mean);
@@ -76,6 +84,9 @@ public:
     vec temperature;
     vec pressure;
     vec displacement;
+    vec radial_distribution;
+
+    double count;
 };
 
 #endif // CELLSOLVER_H
