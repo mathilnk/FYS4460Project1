@@ -87,6 +87,7 @@ public:
     vec radial_distribution;
 
     double count;
+    bool slow;
 };
 
 #endif // CELLSOLVER_H

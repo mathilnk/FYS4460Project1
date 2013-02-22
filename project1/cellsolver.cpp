@@ -223,11 +223,21 @@ void CellSolver::solve_one_time_step(double t, double dt, string filename, bool 
     //loop to find v_new, now the atoms all have a new position. v_half is saved in atm->velocity//
     ///////////////////////////////////////////////////////////////////////////////////////////////
     double gamma;
-    if(Berendsen){
+    if(Berendsen && current_time_step<500){
         gamma = BerendsenThermo();
     }else{
         gamma = 1;
     }
+    if(slow && current_time_step%30==0){
+
+        T_bath = T_bath-10/T0;
+        if(T_bath<0){
+            T_bath = 1.0/T0;
+        }
+
+        gamma=BerendsenThermo();
+    }
+    cout<<"T_bath "<<T_bath*T0<<endl;
     for(int j=0;j<CellN;j++){
 
         currentCell = myContainer->myCells[j];
@@ -436,7 +446,7 @@ vec CellSolver::force_between(vec r_1, vec r_2, bool sameCell){
     }
     if(true){
         pot_energy[current_time_step] +=4*(1/pow(length,6) - 1/pow(length,3));
-        pressure_sum = pressure_sum + f[0]*r[0] + f[1]*r[1] + f[2]*r[2];
+        pressure_sum = pressure_sum + (f[0]*r[0] + f[1]*r[1] + f[2]*r[2])*length/l;
     }else{
         pot_energy[current_time_step] -= 2*(1/pow(length,6) - 1/pow(length,3));
         pressure_sum = pressure_sum + 0.5*(f[0]*r[0] + f[1]*r[1] + f[2]*r[2]);
@@ -533,7 +543,7 @@ double CellSolver::measurePressure(){
     /*
       should rune measureTemp first
       */
-    pressure[current_time_step] =  myContainer->numberOfAtoms*temperature[current_time_step]/volume + 1/(6*volume)*pressure_sum;
+    pressure[current_time_step] =  myContainer->numberOfAtoms*temperature[current_time_step]/volume + 1/(3*volume)*pressure_sum;
     return pressure[current_time_step];
 }
 

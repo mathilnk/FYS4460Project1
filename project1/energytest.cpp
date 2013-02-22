@@ -28,9 +28,9 @@ EnergyTest::EnergyTest()
     stringstream out;
     bool writeVMD = true;
     bool writeMeasurements = true;
-    double T_bath = 0;
+    double T_bath = 1;
     bool Andersen = false;
-    bool Berendsen = false;
+    bool Berendsen = true;
 
 
 
@@ -38,19 +38,25 @@ EnergyTest::EnergyTest()
     vec dt = vec(3);
     dt<<0.006;
     cout<<dt<<endl;
-    for(int i =0;i<dt.size(); i++){
-
+    vec T_vec(5);
+    T_vec<<100;//<<50<<100<<300<<500;
+    bool s = true;
+    for(int i =0;i<1; i++){
         CellSolver* mySolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz, b, T, r_cut, element);
-
-
-        cout<<"AT "<<i<<" experiment of "<<dt.size()<<" experiments"<<endl;
+        T_bath = T_vec(i);
+        T = T_bath;
+        if(i==0){
+            mySolver->slow = true;
+        }
+        cout<<"AT "<<i<<" experiment of "<<5<<" experiments"<<endl;
         //string filenamebase = "things";
-        string current_dt_string;
+        string current_string;
         stringstream out;
         out<<i;
-        current_dt_string = out.str();
+        current_string = out.str();
         cout<<"her"<<endl;
-        mySolver->solve(0,numOfTimeSteps, dt[i],filenamebase, writeVMD, writeMeasurements, T_bath, Berendsen, Andersen);  }
-
+        mySolver->solve(0,numOfTimeSteps, dt[i],filenamebase+current_string, writeVMD, writeMeasurements, T_bath, Berendsen, Andersen);
+        mySolver->slow = false;
+    }
 
 }
