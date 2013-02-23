@@ -30,6 +30,7 @@ CellSolver::CellSolver(int CellNx, int CellNy, int CellNz, int Nx, int Ny, int N
     this->mean = 0;
     this->sig= sqrt(T/T0);
     this->T = T/T0;
+    this->thermostatON = false;
 
     initializeContainer();
 
@@ -84,9 +85,7 @@ void CellSolver::solve(double t_start, int timesteps, double dt, string filename
     clock_t start = clock();
 
     //findForces();
-    //findKinetic();
-
-
+    //findKinetic():
     for(int i=0;i<timesteps;i++){
 
         cout<<"tidssteg: "<<current_time_step<<endl;
@@ -109,6 +108,10 @@ void CellSolver::solve(double t_start, int timesteps, double dt, string filename
     }
     cout<<(stop-start)/CLOCKS_PER_SEC<< " s for Cell solver"<<endl;
 }
+
+
+
+
 
 void CellSolver::solve_one_time_step(double t, double dt, string filename, bool writeVMD, bool writeMeasurements){
     /*
@@ -223,21 +226,13 @@ void CellSolver::solve_one_time_step(double t, double dt, string filename, bool 
     //loop to find v_new, now the atoms all have a new position. v_half is saved in atm->velocity//
     ///////////////////////////////////////////////////////////////////////////////////////////////
     double gamma;
-    if(Berendsen && current_time_step<500){
+    if(thermostatON && Berendsen){
         gamma = BerendsenThermo();
     }else{
         gamma = 1;
     }
-    if(slow && current_time_step%30==0){
 
-        T_bath = T_bath-10/T0;
-        if(T_bath<0){
-            T_bath = 1.0/T0;
-        }
-
-        gamma=BerendsenThermo();
-    }
-    cout<<"T_bath "<<T_bath*T0<<endl;
+    //cout<<"T_bath "<<T_bath*T0<<endl;
     for(int j=0;j<CellN;j++){
 
         currentCell = myContainer->myCells[j];
@@ -246,7 +241,7 @@ void CellSolver::solve_one_time_step(double t, double dt, string filename, bool 
             v_half = atm->velocity;
             v_new = v_half + atm->force/2*dt;
             v_new = gamma*v_new;
-            if(Andersen){
+            if(thermostatON && Andersen){
                 AndersenThermo(atm);
             }else{
                 atm->velocity = v_new;
@@ -330,7 +325,7 @@ void CellSolver::findForces(){
     ////////////////////////////////////////////////////////////////
     //first find the forces between the particles in the same cell//
     ////////////////////////////////////////////////////////////////
-    cout<<"cellN"<<CellN<<endl;
+    //cout<<"cellN"<<CellN<<endl;
     for(int j=0;j<CellN;j++){
         currentCell = myContainer->myCells[j];
 

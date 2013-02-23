@@ -1,0 +1,9 @@
+\section{Thermostats}
+In order to simulate the canonical ensemble, interactions with an external heat bath must be taken into account. In this project we use two thermostats; the Berendsen thermostat and the Andersen thermostat.
+\subsection{The Berendsen thermostat}
+The Berendsen thermostat rescales the velocities by multiplying them with a factor $\gamma$ to regulate the temperature:
+\begin{align}
+ \gamma = \sqrt{1 + \frac{\Delta t}{\tau}\left(\frac{T_{bath}}{T} - 1\right)}
+\end{align}
+Here $\tau$ is the relaxation time, tuning the coupling to the heat bath. In my program I gave $\tau$ ten times the value of $\Delta t$ ($\tau = 10\Delta t$).
+key-words: Berendsen, Andersen

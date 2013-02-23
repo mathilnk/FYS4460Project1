@@ -104,7 +104,7 @@ is the variable we end up computing with and $A_0$ is a conversion factor. The t
 \end{align}
 
 \subsubsection{Initial velocity}
-For the intial velocity we draw random values from a normal distribution with average zero and standard deviation $\sqrt(k_B T/m)$ for each of the components. m is the mass of an atom, and $k_B$ is the Boltzmann constant.Figure \ref{initial_vel} shows the velocities 
+For the intial velocity we draw random values from a normal distribution with average zero and standard deviation $\sqrt(k_B T/m)$ for each of the components. m is the mass of an atom, and $k_B$ is the Boltzmann constant. Figure \ref{initial_velo} shows the velocities 
 before the first time step. The velocities are given in MD-units. For MD-units the standar deviation is $\sigma_v = \sqrt{T'} = \sqrt{T/T0} = 0.914$. This fits quite good with the histogram in figure \ref{initial_velo}.
 
 \begin{figure}[H]
@@ -115,14 +115,19 @@ before the first time step. The velocities are given in MD-units. For MD-units t
  \label{initial_velo}
 \end{figure}
 \subsection{Implementation - Verlet solver}
-I ran my program for $8\times 8 \times 8$- lattice, with initial-temperature at 100 K (without thermostat), for 1000 timesteps. The result can be viewed in the gif called movie\_Verlet.gif. 500 timesteps -> 121 s
+I ran my program for $8\times 8 \times 8$- lattice, with initial-temperature at 100 K (without thermostat), for 1000 timesteps. The result can be viewed in the gif called movie\_Verlet.gif. 500 timesteps -> 121 s\\
+\begin{tabular}{l c r}
+\text{\# time steps}&\text{Verlet Solver-tid(s)} &\text{CellSolver-tid(s)}\\
+ 100&2&24 \\
+\end{tabular}
+
 \subsection{Neighbour lists}
-The Lennard- Jones interactions is short ranged, and can be neglected for distances over $r_{cut} = 3\L0$. There is not much poi
+The Lennard- Jones interactions is short ranged, and can be neglected for distances over $r_{cut} = 3\L0$. There is not much point in calculating the forces outside this range. We therefore divide the space into quadratic cells of size $r_{cut}$, and let the 
+atoms only interact with the atoms in the neighboring cells (and their own cell).
 \subsection{Implementation - Neighbour lists}
-I ran my program for $8\times 8 \times 8$- lattice, with initial-temperature at 100 K (without thermostat), for 1000 timesteps. The result can be viewed in the gif with the name movie\_cell.gif. Took 314 s. Unfortunatly I calculate
-the forces twice, because that was my brute force approach to make cells. It took me forever to debug, so now that I have a working code I don't feel like ruining it by trying to optimize. 500 -> 157 s. For $N=8$ the brute force solver is faster than
-the Cell solver. But when for a larger lattice, it is the other way around. If I had calculated the forces only once per time step, the Cell solver would probably use about half the time it uses now. (In the brute force solver I only calculate the forces once). 
+I ran my program for $8\times 8 \times 8$- lattice, with initial-temperature at 100 K (without thermostat), for 1000 timesteps. The result can be viewed in the gif with the name movie\_cell.gif.  
 
 \subsection{The central limit theorem}
 According to the central limit theorem, the velocity distribution of the particles will eventually evolve into a Maxwell-Boltzmann distribution independent of the initial conditions. We test this by starting a simulation with velocities that are uniforml distributed
-random numbers in a interval. I made histograms of the velocities at every time step, and put them together to make a animation. This can be found in movie\_velocity.gif.
+random numbers in a interval. I made histograms of the x-compontents of the velocities at every time step, and put them together to make a animation. This can be found in movie\_velocity.gif. Here we see that the x components are uniformly distributed at first, but turn into the typical shape of a normal distribution. This happens for 
+the y- and z- components as well. When you have a normal distribution for the three space components, the magnitude of the velocity will become a Maxwell-Boltzmann-distribution.  

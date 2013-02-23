@@ -15,7 +15,9 @@ SOURCES += main.cpp \
     cell.cpp \
     cellcontainer.cpp \
     atomnode.cpp \
-    energytest.cpp
+    energytest.cpp \
+    timetest.cpp \
+    thermostattest.cpp
 
 HEADERS += \
     lattice.h \
@@ -27,5 +29,7 @@ HEADERS += \
     cell.h \
     cellcontainer.h \
     atomnode.h \
-    energytest.h
+    energytest.h \
+    timetest.h \
+    thermostattest.h
 

@@ -31,6 +31,7 @@ public:
     int numOfBins;
     double T_bath;
     bool Andersen, Berendsen;
+    bool thermostatON;
 
 
     //initialize

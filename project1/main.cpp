@@ -10,6 +10,8 @@
 #include"cellsolver.h"
 #include"atomnode.h"
 #include"energytest.h"
+#include"timetest.h"
+#include"thermostattest.h"
 
 
 using namespace std;
@@ -111,7 +113,9 @@ int main()
 //          Atom * a = new Atom(pos,vel,"Ar");
 //          c->addAtom(a);
 //      }
-      new EnergyTest();
+      //new EnergyTest();
+      //new TimeTest();
+      new ThermostatTest();
 
 //cout<<r_cut<<endl;
 

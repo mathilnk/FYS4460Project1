@@ -6,6 +6,8 @@
 \BOOKMARK [2][-]{subsection.2.4}{Neighbour lists}{section.2}
 \BOOKMARK [2][-]{subsection.2.5}{Implementation - Neighbour lists}{section.2}
 \BOOKMARK [2][-]{subsection.2.6}{The central limit theorem}{section.2}
-\BOOKMARK [1][-]{section.3}{Macroscopic observables}{}
-\BOOKMARK [1][-]{section.4}{The diffusion constant}{}
-\BOOKMARK [1][-]{section.5}{Thermostats}{}
+\BOOKMARK [1][-]{section.3}{Thermostats}{}
+\BOOKMARK [2][-]{subsection.3.1}{The Berendsen thermostat}{section.3}
+\BOOKMARK [2][-]{subsection.3.2}{The Andersen thermostat}{section.3}
+\BOOKMARK [1][-]{section.4}{Macroscopic observables}{}
+\BOOKMARK [1][-]{section.5}{The diffusion constant}{}

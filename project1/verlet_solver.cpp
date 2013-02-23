@@ -45,7 +45,7 @@ Lattice Verlet_solver::solve_one_time_step(double t, double dt, string filename)
     /////////////////////////////////////////////////////////////
     //gives the filename an ending, with the current_time_step//
     ///////////////////////////////////////////////////////////
-    cout<<"tidssteg: "<<current_time_step<<endl;
+    //cout<<"tidssteg: "<<current_time_step<<endl;
     string current_time_step_string;
     stringstream out;
     out<<current_time_step;

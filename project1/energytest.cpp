@@ -13,7 +13,7 @@ EnergyTest::EnergyTest()
     CellNy = CellNx;
     CellNz = CellNx;
     r_cut = Nx*b/(CellNx);
-    double numOfTimeSteps = 1000;
+    double numOfTimeSteps = 500;
 //    CellNx = 1;
 //    CellNy = 1;
 //    CellNz = 1;
@@ -45,7 +45,7 @@ EnergyTest::EnergyTest()
         CellSolver* mySolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz, b, T, r_cut, element);
         T_bath = T_vec(i);
         T = T_bath;
-        if(i==0){
+        if(false){
             mySolver->slow = true;
         }
         cout<<"AT "<<i<<" experiment of "<<5<<" experiments"<<endl;
