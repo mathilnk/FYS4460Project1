@@ -41,8 +41,9 @@ EnergyTest::EnergyTest()
     vec T_vec(5);
     T_vec<<100;//<<50<<100<<300<<500;
     bool s = true;
+    int max_time_step = numOfTimeSteps;
     for(int i =0;i<1; i++){
-        CellSolver* mySolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz, b, T, r_cut, element);
+        CellSolver* mySolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz,max_time_step, b, T, r_cut, element);
         T_bath = T_vec(i);
         T = T_bath;
         if(false){

@@ -31,9 +31,9 @@ void ThermostatTest::runBandA_Always(){
     bool Berendsen = true;
     bool Andersen = false;
     double T_bath = 100;
-    CellSolver* bSolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz, b, T, r_cut, element);
+    CellSolver* bSolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz,numOfTimeSteps, b, T, r_cut, element);
     bSolver->thermostatON = true;
-    CellSolver* aSolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz, b, T, r_cut, element);
+    CellSolver* aSolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz,numOfTimeSteps, b, T, r_cut, element);
     aSolver->thermostatON = true;
 
     bSolver->solve(0, numOfTimeSteps, dt, B_filename, writeVMD, writeMeasurements, T_bath, Berendsen, Andersen);
@@ -60,20 +60,23 @@ void ThermostatTest::runBUpDown(double first, double second, double first_timest
     double numOfTimeSteps;
     bool writeVMD = true;
     bool writeMeasurements = true;
-    string filename1 = "UpDown1";
-    string filename2 = "UpDown2";
+    string filename1 = "UpDown";
+    //string filename2 = "UpDown2";
     //uble numOfTimeSteps;
 
 
     bool Berendsen = true;
     bool Andersen = false;
     double T_bath;
-    CellSolver* bSolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz, b, T, r_cut, element);
+    int max_time_step = first_timestep+second_timestep;
+    CellSolver* bSolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz,max_time_step, b, T, r_cut, element);
     bSolver->thermostatON = true;
     numOfTimeSteps = first_timestep;
     T_bath = first;
     bSolver->solve(0, numOfTimeSteps, dt, filename1, writeVMD, writeMeasurements, T_bath, Berendsen, Andersen);
+    cout<<"done wiht first"<<endl;
     T_bath = second;
     numOfTimeSteps = second_timestep;
-    bSolver->solve(dt*first_timestep, numOfTimeSteps, dt, filename2, writeVMD, writeMeasurements, T_bath, Berendsen, Andersen);
+    bSolver->solve(dt*first_timestep, numOfTimeSteps, dt, filename1, writeVMD, writeMeasurements, T_bath, Berendsen, Andersen);
+    cout<<"done with second"<<endl;
 }

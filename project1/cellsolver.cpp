@@ -4,7 +4,7 @@
 
 using namespace std;
 
-CellSolver::CellSolver(int CellNx, int CellNy, int CellNz, int Nx, int Ny, int Nz, double b, double T, double r_cut, string element){
+CellSolver::CellSolver(int CellNx, int CellNy, int CellNz, int Nx, int Ny, int Nz, int max_time_steps,double b, double T, double r_cut, string element){
     this->CellNx = CellNx;
     this->CellNy = CellNy;
     this->CellNz = CellNz;
@@ -42,6 +42,13 @@ CellSolver::CellSolver(int CellNx, int CellNy, int CellNz, int Nx, int Ny, int N
     numOfBins = CellNx*100;
     radial_distribution = zeros(numOfBins, 1);
     //displacement = 0;
+    this->kin_energy = zeros(max_time_steps,1);
+    this->pot_energy = zeros(max_time_steps,1);
+    this->pressure = zeros(max_time_steps,1);
+    this->temperature = zeros(max_time_steps+1,1);
+    this->displacement = zeros(max_time_steps,1);
+    this->temperature[0] = T;
+
 
 
 
@@ -69,12 +76,6 @@ void CellSolver::solve(double t_start, int timesteps, double dt, string filename
     this->Berendsen = Berendsen;
     this->Andersen = Andersen;
 
-    this->kin_energy = zeros(timesteps,1);
-    this->pot_energy = zeros(timesteps,1);
-    this->pressure = zeros(timesteps,1);
-    this->temperature = zeros(timesteps+1,1);
-    this->displacement = zeros(timesteps,1);
-    this->temperature[0] = T;
     count = 0;
     //displacement = 0;
 

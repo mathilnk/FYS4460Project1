@@ -1,0 +1,7 @@
+#compiled files
+*.0
+*.so
+*.a
+#results
+R*.xyz
+R*.txt

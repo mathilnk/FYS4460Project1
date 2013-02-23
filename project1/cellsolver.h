@@ -7,7 +7,7 @@
 class CellSolver
 {
 public:
-    CellSolver(int CellNx, int CellNy, int CellNz, int Nx, int Ny, int Nz, double b, double T, double r_cut, string element);
+    CellSolver(int CellNx, int CellNy, int CellNz, int Nx, int Ny, int Nz,int max_time_steps, double b, double T, double r_cut, string element);
     //system parameters
     int CellNx;
     int CellNy;
@@ -46,6 +46,7 @@ public:
     //Solve_methods
     void solve_one_time_step(double t, double dt, string filename, bool writeVMD,bool writeMeasurements);
     void solve(double t_start, int timesteps, double dt, string filename, bool writeVMD=true,bool writeMeasurements=false, double T_bath = 0, bool Berendsen = false, bool Andersen=false);
+
 
     //forces
     void findForces();

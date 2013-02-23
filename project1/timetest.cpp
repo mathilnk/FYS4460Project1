@@ -27,6 +27,7 @@ TimeTest::TimeTest()
     double dt = 0.01;
     string filenamebase = "test";
     double mass =1;
+    int max_time_step = numOfTimeSteps;
     for(int i=0;i<3;i++){
         Nx = N_vec(i);
         CellNx = Nx*b/r_cut;
@@ -37,8 +38,10 @@ TimeTest::TimeTest()
         Ny= Nx;
         Nz = Nx;
         for(int j=0;j<3;j++){
-            CellSolver* mySolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz, b, T, r_cut, element);
+
             numOfTimeSteps = time_steps_vec(j);
+            int max_time_step = numOfTimeSteps;
+            CellSolver* mySolver = new CellSolver(CellNy, CellNx, CellNz, Nx,Ny, Nz,max_time_step, b, T, r_cut, element);
             cout<<"N: "<<Nx<<" numOfTimesteps: "<<numOfTimeSteps<<endl;
             mySolver->solve(0,numOfTimeSteps, dt,filenamebase, writeVMD, writeMeasurements);
 
